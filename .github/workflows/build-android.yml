@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -12,30 +12,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Godot
-        uses: lihop/godot-ci-action@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          version: 4.4
-          release-type: standard
-
-      - name: Download Android Build Template
-        run: |
-          godot --headless --quit
-          # 安装 Android 导出模板
-          godot --headless --export-pack
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Import project
-        run: godot --headless --edit --quit
-
-      - name: Build APK
+      - name: Download Godot 4.4
         run: |
-          godot --headless --export-release "Android" /home/runner/work/FPSProject/FPSProject/build/outputs/apk/release/FPSProject.apk
+          wget -q https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_linux.x86_64.zip -O godot.zip
+          unzip -q godot.zip
+          mv Godot_v4.4-stable_linux.x86_64 godot
+          chmod +x godot
+
+      - name: Download Android Export Templates
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_export_templates.tpz -O templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.4.stable
+          cp templates.tpz ~/.local/share/godot/export_templates/4.4.stable/export_templates.tpz
+
+      - name: Install Export Templates
+        run: |
+          ./godot --headless --quit 2>&1 || true
+          # 手动解压 templates 到正确位置
+          cd ~/.local/share/godot/export_templates/4.4.stable
+          unzip -q export_templates.tpz 2>/dev/null || true
+          # 查找 android 模板
+          find ~/.local/share/godot/export_templates -name "*.apk" 2>/dev/null || echo "查找模板文件..."
+
+      - name: Export APK
+        run: |
+          ./godot --headless --export-release "Android" FPSProject.apk 2>&1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: FPSProject-Android-APK
-          path: /home/runner/work/FPSProject/FPSProject/build/outputs/apk/release/FPSProject.apk
+          name: FPSProject-APK
+          path: FPSProject.apk

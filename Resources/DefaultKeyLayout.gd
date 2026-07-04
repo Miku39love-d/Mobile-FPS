@@ -28,11 +28,15 @@ extends Resource
 func get_default_layout() -> Dictionary:
 	return layout_data.duplicate()
 
-## 重置 SettingsManager 的键位为默认
-static func reset_to_default():
-	if not SettingsManager.instance:
+## 重置键位为默认（需要在游戏运行时调用，此时 SettingsManager 已加载）
+func reset_to_default():
+	if Engine.is_editor_hint():
 		return
-	var dfl = DefaultKeyLayout.new()
-	SettingsManager.instance.key_layout = dfl.get_default_layout()
-	SettingsManager.instance.save_key_layout()
-	print("[DefaultKeyLayout] 已重置为默认键位")
+	if not has_node("/root/SettingsManager"):
+		return
+	var sm = get_node("/root/SettingsManager") as SettingsManager
+	if sm:
+		var dfl = DefaultKeyLayout.new()
+		sm.key_layout = dfl.get_default_layout()
+		sm.save_key_layout()
+		print("[DefaultKeyLayout] 已重置为默认键位")
