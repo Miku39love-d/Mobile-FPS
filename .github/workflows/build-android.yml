@@ -24,6 +24,10 @@ jobs:
           api-level: 34
           build-tools: 34.0.0
 
+      - name: Accept Android SDK licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Download Godot 4.4 Engine
         run: |
           wget -q "https://github.com/godotengine/godot-builds/releases/download/4.4-stable/Godot_v4.4-stable_linux.x86_64.zip"
