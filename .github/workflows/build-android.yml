@@ -12,6 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Fix root symlink for CI
+        run: |
+          sudo ln -s $HOME /root || true
+
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
