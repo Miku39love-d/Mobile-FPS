@@ -1,11 +1,11 @@
 ea4bc82a6ad023ab7ee23ee620429895
 ::res://::1783176350
 export_guide.txt::TextFile/TextFile::-1::1783170798::0::1::::<><><>0<>0<><>::
-export_presets.cfg::TextFile::-1::1783177501::0::1::::<><><>0<>0<><>::
+export_presets.cfg::TextFile/TextFile::-1::1783177882::0::1::::<><><>0<>0<><>::
 README.md::TextFile/TextFile::-1::1783172393::0::1::::<><><>0<>0<><>::
 ::res://Player/::1783170562
 ::res://Resources/::1783176126
-DefaultKeyLayout.gd::GDScript::3325189945747909732::1783177465::0::1::::DefaultKeyLayout<>Resource<><>0<>0<><>::
+DefaultKeyLayout.gd::GDScript/GDScript::3325189945747909732::1783177465::0::1::::DefaultKeyLayout<>Resource<><>0<>0<><>::
 ::res://Scenes/::1783172193
 Main.tscn::PackedScene/PackedScene::-1::1783172372::0::1::::<><><>0<>0<><>::res://Scripts/Player/PlayerController.gd<>res://Scripts/Main.gd<>res://Scripts/Managers/SettingsManager.gd<>res://Scripts/Managers/InputManager.gd
 ::res://Scripts/::1783176126
@@ -19,7 +19,7 @@ UIManager.gd::GDScript/GDScript::8428840403662309054::1783176295::0::1::::<>Canv
 PlayerController.gd::GDScript/GDScript::3509077958551017682::1783170663::0::1::::PlayerController<>CharacterBody3D<><>0<>0<><>::
 ::res://Scripts/Settings/::1783176126
 GraphicsSettings.gd::GDScript/GDScript::7929383183035102833::1783172809::0::1::::GraphicsSettings<>Control<><>0<>0<><>::
-KeyEditor.gd::GDScript::1632920054025667277::1783177483::0::1::::KeyEditor<>Control<><>0<>0<><>::
+KeyEditor.gd::GDScript/GDScript::1632920054025667277::1783177483::0::1::::KeyEditor<>Control<><>0<>0<><>::
 SensitivitySettings.gd::GDScript/GDScript::899481941172544644::1783170722::0::1::::SensitivitySettings<>Control<><>0<>0<><>::
 SettingsPanel.gd::GDScript/GDScript::6628028753279763471::1783170681::0::1::::SettingsPanel<>Panel<><>0<>0<><>::
 ::res://Scripts/UI/::1783176126
