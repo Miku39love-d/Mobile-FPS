@@ -1,0 +1,41 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: lihop/godot-ci-action@v2
+        with:
+          version: 4.4
+          release-type: standard
+
+      - name: Download Android Build Template
+        run: |
+          godot --headless --quit
+          # 安装 Android 导出模板
+          godot --headless --export-pack
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Import project
+        run: godot --headless --edit --quit
+
+      - name: Build APK
+        run: |
+          godot --headless --export-release "Android" /home/runner/work/FPSProject/FPSProject/build/outputs/apk/release/FPSProject.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FPSProject-Android-APK
+          path: /home/runner/work/FPSProject/FPSProject/build/outputs/apk/release/FPSProject.apk

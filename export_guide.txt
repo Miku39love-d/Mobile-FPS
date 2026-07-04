@@ -1,0 +1,56 @@
+# Godot 4.4 Android 导出配置说明
+# 将此文件内容合并到 project.godot 的 [exports] 段落
+
+# 手动导出步骤（在 Godot Editor 中）：
+# 1. 安装 Android 构建模板：Project → Install Android Build Template
+# 2. 配置 Android SDK/NDK 路径（Editor Settings → Export → Android）
+# 3. 一键导出：Project → Export → Android → 导出 APK
+#
+# 命令行导出（需要先配置 export_presets.cfg）：
+# ./Godot_v4.4-stable_linux.x86_64 --headless --export-release "Android" out.apk
+
+[export]
+
+# 以下是 export_presets.cfg 的参考内容：
+"""
+[preset.0]
+
+name="Android"
+platform="Android"
+runnable=true
+export_filter="all_resources"
+include_filter=""
+exclude_filter=""
+
+[preset.0.options]
+
+# 应用信息
+application/package_name="com.fps.mobile"
+application/name="Mobile FPS"
+application/version_code=1
+application/version_string="1.0"
+application/icon="res://icon.svg"
+
+# 屏幕方向
+screen/landscape=true
+screen/portrait=false
+
+# 权限
+permissions/network_state=true
+permissions/internet=true
+permissions/vibrate=true
+
+# 功能
+features/opengl3=true
+features/vulkan=true
+features/xr_mode=0
+
+# 签名（debug 用自动生成，release 需自己配置 keystore）
+keystore/debug=true
+keystore/user=""
+keystore/password=""
+
+# 架构
+architectures/armeabi-v7a=true
+architectures/arm64-v8a=true
+"""
