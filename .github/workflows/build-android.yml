@@ -61,7 +61,7 @@ jobs:
       - name: Generate debug keystore
         run: |
           mkdir -p ~/.local/share/godot/keystores
-          keytool -genkeypair -alias androiddebugkey -keypass android -keystore ~/.local/share/godot/keystores/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
+          keytool -genkeypair -keyalg RSA -alias androiddebugkey -keypass android -keystore ~/.local/share/godot/keystores/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
 
       - name: Install Android build template
         run: |
