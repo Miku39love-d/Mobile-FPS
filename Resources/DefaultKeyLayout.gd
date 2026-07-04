@@ -32,11 +32,17 @@ func get_default_layout() -> Dictionary:
 func reset_to_default():
 	if Engine.is_editor_hint():
 		return
-	if not has_node("/root/SettingsManager"):
+	# Resource 不能用 has_node / get_node，用 get_tree() 来获取根节点
+	var root = Engine.get_main_loop().root
+	if root == null:
 		return
-	var sm = get_node("/root/SettingsManager") as SettingsManager
+	var sm = root.get_node_or_null("/root/SettingsManager")
+	if sm == null:
+		# 尝试通过 autoload 名称获取
+		sm = root.get_node_or_null("SettingsManager")
 	if sm:
 		var dfl = DefaultKeyLayout.new()
 		sm.key_layout = dfl.get_default_layout()
-		sm.save_key_layout()
+		if sm.has_method("save_key_layout"):
+			sm.save_key_layout()
 		print("[DefaultKeyLayout] 已重置为默认键位")

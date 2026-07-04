@@ -21,6 +21,12 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android build-tools
+        run: |
+          sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34"
+          echo "Android SDK installed"
+          ls $ANDROID_HOME/build-tools/34.0.0/ | head -20
+
       - name: Download Godot 4.4
         run: |
           wget -q https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_linux.x86_64.zip -O godot.zip
@@ -28,22 +34,37 @@ jobs:
           mv Godot_v4.4-stable_linux.x86_64 godot
           chmod +x godot
 
-      - name: Download Android Export Templates
+      - name: Download and Install Export Templates
         run: |
-          wget -q https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_export_templates.tpz -O templates.tpz
+          wget -q https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_export_templates.tpz -O /tmp/templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/4.4.stable
-          cp templates.tpz ~/.local/share/godot/export_templates/4.4.stable/export_templates.tpz
+          cd /tmp
+          unzip -q templates.tpz "templates/android_debug.apk" "templates/android_release.apk"
+          cp /tmp/templates/android_debug.apk ~/.local/share/godot/export_templates/4.4.stable/android_debug.apk
+          cp /tmp/templates/android_release.apk ~/.local/share/godot/export_templates/4.4.stable/android_release.apk
+          echo "Export templates installed"
+          ls -la ~/.local/share/godot/export_templates/4.4.stable/
 
-      - name: Install Export Templates
+      - name: Create Godot editor settings for Android
         run: |
-          ./godot --headless --quit 2>&1 || true
-          # 手动解压 templates 到正确位置
-          cd ~/.local/share/godot/export_templates/4.4.stable
-          unzip -q export_templates.tpz 2>/dev/null || true
-          # 查找 android 模板
-          find ~/.local/share/godot/export_templates -name "*.apk" 2>/dev/null || echo "查找模板文件..."
+          # Godot 4.4 通过 editor_settings-4.tres 配置 Android SDK 路径
+          mkdir -p ~/.config/godot
+          ANDROID_SDK="${ANDROID_HOME}"
+          cat > ~/.config/godot/editor_settings-4.tres << 'EOF'
+          [gd_resource type="EditorSettings" format=3]
+          [section] "export/android"
+          adb_path = "${ANDROID_SDK}/platform-tools/adb"
+          apksigner_path = "${ANDROID_SDK}/build-tools/34.0.0/apksigner"
+          jarsigner_path = ""
+          EOF
+          # 实际替换路径
+          sed -i "s|\${ANDROID_SDK}|$ANDROID_SDK|g" ~/.config/godot/editor_settings-4.tres
+          echo "Editor settings:"
+          cat ~/.config/godot/editor_settings-4.tres
 
       - name: Export APK
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           ./godot --headless --export-release "Android" FPSProject.apk 2>&1
 

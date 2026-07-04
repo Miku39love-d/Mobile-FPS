@@ -239,11 +239,15 @@ func save_layout():
 func reset_layout():
 	"""恢复默认布局"""
 	_working_layout.clear()
+	var dfl = DefaultKeyLayout.new()
+	var default_layout: Dictionary = dfl.get_default_layout()
 	for btn in _registered_buttons:
-		# 重置到默认位置（平均分布在右下角）
-		btn.global_position = Vector2(100, 100)
-		btn.custom_minimum_size = Vector2(100, 48)
-	_update_working_layout(btn)
+		var btn_id: String = btn.get_meta("key_id", btn.name)
+		if default_layout.has(btn_id):
+			var data: Dictionary = default_layout[btn_id]
+			btn.global_position = Vector2(data.get("pos_x", 0), data.get("pos_y", 0))
+			btn.custom_minimum_size = Vector2(data.get("size_x", 80), data.get("size_y", 48))
+		_update_working_layout(btn)
 	layout_reset.emit()
 	print("[KeyEditor] 布局已重置为默认")
 
