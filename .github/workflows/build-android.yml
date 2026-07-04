@@ -21,11 +21,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android build-tools
+      - name: Install Android build-tools and platform-tools
         run: |
           sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34"
-          echo "Android SDK installed"
-          ls $ANDROID_HOME/build-tools/34.0.0/ | head -20
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls $ANDROID_HOME/build-tools/34.0.0/apksigner 2>/dev/null && echo "apksigner found" || echo "apksigner NOT found"
 
       - name: Download Godot 4.4
         run: |
@@ -45,31 +45,29 @@ jobs:
           echo "Export templates installed"
           ls -la ~/.local/share/godot/export_templates/4.4.stable/
 
-      - name: Create Godot editor settings for Android
+      - name: Create Godot editor settings (with real paths)
         run: |
-          # Godot 4.4 通过 editor_settings-4.tres 配置 Android SDK 路径
           mkdir -p ~/.config/godot
-          ANDROID_SDK="${ANDROID_HOME}"
-          cat > ~/.config/godot/editor_settings-4.tres << 'EOF'
+          SDK="$ANDROID_HOME"
+          cat > ~/.config/godot/editor_settings-4.tres << SETTINGS
           [gd_resource type="EditorSettings" format=3]
+          
           [section] "export/android"
-          adb_path = "${ANDROID_SDK}/platform-tools/adb"
-          apksigner_path = "${ANDROID_SDK}/build-tools/34.0.0/apksigner"
+          
+          adb_path = "$SDK/platform-tools/adb"
+          apksigner_path = "$SDK/build-tools/34.0.0/apksigner"
           jarsigner_path = ""
-          EOF
-          # 实际替换路径
-          sed -i "s|\${ANDROID_SDK}|$ANDROID_SDK|g" ~/.config/godot/editor_settings-4.tres
-          echo "Editor settings:"
+          SETTINGS
+          echo "Wrote editor settings:"
           cat ~/.config/godot/editor_settings-4.tres
 
       - name: Export APK
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           ./godot --headless --export-release "Android" FPSProject.apk 2>&1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: FPSProject-APK
           path: FPSProject.apk
