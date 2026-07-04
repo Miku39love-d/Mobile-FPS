@@ -1,0 +1,30 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  export-android:
+    name: Android Export
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Godot Android Export
+        uses: dulvui/godot-android-export@v4
+        with:
+          godot-version: "4.4"
+          godot-channel: "stable"
+          working-directory: "."
+          export-name: "Android"
+          export-filename: "FPSProject.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FPSProject-APK
+          path: FPSProject.apk
