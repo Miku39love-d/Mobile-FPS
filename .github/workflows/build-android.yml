@@ -49,10 +49,14 @@ jobs:
           cp /tmp/templates/android_release.apk ~/.local/share/godot/export_templates/4.4.stable/android_release.apk
           echo "Export templates installed"
 
+      - name: Generate debug keystore
+        run: |
+          mkdir -p ~/.local/share/godot/keystores
+          keytool -genkey -v -keystore ~/.local/share/godot/keystores/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          echo "Debug keystore generated"
+          ls -la ~/.local/share/godot/keystores/debug.keystore
+
       - name: Generate Godot editor settings (with Xvfb)
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           mkdir -p ~/.config/godot
           Xvfb :99 -screen 0 1024x768x24 &
@@ -69,15 +73,6 @@ jobs:
             echo "ERROR: editor settings not generated"
             exit 1
           fi
-
-      - name: Generate debug keystore
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
-        run: |
-          mkdir -p ~/.local/share/godot/keystores
-          $JAVA_HOME/bin/keytool -genkey -v -keystore ~/.local/share/godot/keystores/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          echo "Debug keystore generated"
-          ls -la ~/.local/share/godot/keystores/debug.keystore
 
       - name: Export APK
         run: |
