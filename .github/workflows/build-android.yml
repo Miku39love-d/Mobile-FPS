@@ -26,18 +26,18 @@ jobs:
 
       - name: Download Godot 4.4 Engine
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.4.0-stable/Godot_v4.4.0-stable_linux.x86_64.zip
-          unzip -q Godot_v4.4.0-stable_linux.x86_64.zip
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.4-stable/Godot_v4.4-stable_linux.x86_64.zip
+          unzip -q Godot_v4.4-stable_linux.x86_64.zip
           mv Godot_v4.4* /usr/local/bin/godot
           chmod +x /usr/local/bin/godot
           godot --version
 
       - name: Download Export Templates
         run: |
-          wget -q https://github.com/godotengine/godot-builds/releases/download/4.4.0-stable/Godot_v4.4.0-stable_export_templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/4.4.0.stable
-          cd ~/.local/share/godot/export_templates/4.4.0.stable
-          unzip -o $GITHUB_WORKSPACE/Godot_v4.4.0-stable_export_templates.tpz
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.4-stable/Godot_v4.4-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.4.stable
+          cd ~/.local/share/godot/export_templates/4.4.stable
+          unzip -o $GITHUB_WORKSPACE/Godot_v4.4-stable_export_templates.tpz
           ls -la
 
       - name: Configure Godot Editor Settings
@@ -61,11 +61,11 @@ jobs:
       - name: Install Android build template
         run: |
           mkdir -p android/plugins
-          echo "4.4.0.stable" > android/.build_version
+          echo "4.4.stable" > android/.build_version
           mkdir -p android/build
-          unzip -o ~/.local/share/godot/export_templates/4.4.0.stable/android_source.zip -d android/build/
+          unzip -o ~/.local/share/godot/export_templates/4.4.stable/android_source.zip -d android/build/
           ls android/
-          echo "---"
+          echo "==="
           ls android/build/ | head -10
 
       - name: Import project assets
