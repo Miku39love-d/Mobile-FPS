@@ -12,10 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Xvfb
-        run: sudo apt-get install -y xvfb
-
-      - name: Set up JDK 17
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -27,56 +24,57 @@ jobs:
           api-level: 34
           build-tools: 34.0.0
 
-      - name: Install Android components
+      - name: Download Godot 4.4 Engine
         run: |
-          sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34"
-          ln -sf $ANDROID_HOME/build-tools/34.0.0/* $ANDROID_HOME/build-tools/ 2>/dev/null || true
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.4.0-stable/Godot_v4.4.0-stable_linux.x86_64.zip
+          unzip -q Godot_v4.4.0-stable_linux.x86_64.zip
+          mv Godot_v4.4* /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+          godot --version
 
-      - name: Download Godot 4.4
+      - name: Download Export Templates
         run: |
-          wget -q https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_linux.x86_64.zip -O godot.zip
-          unzip -q godot.zip
-          mv Godot_v4.4-stable_linux.x86_64 godot
-          chmod +x godot
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.4.0-stable/Godot_v4.4.0-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.4.0.stable
+          cd ~/.local/share/godot/export_templates/4.4.0.stable
+          unzip -o $GITHUB_WORKSPACE/Godot_v4.4.0-stable_export_templates.tpz
+          ls -la
 
-      - name: Download and Install Export Templates
+      - name: Configure Godot Editor Settings
         run: |
-          wget -q https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_export_templates.tpz -O /tmp/templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/4.4.stable
-          cd /tmp
-          unzip -q templates.tpz "templates/android_debug.apk" "templates/android_release.apk"
-          cp /tmp/templates/android_debug.apk ~/.local/share/godot/export_templates/4.4.stable/android_debug.apk
-          cp /tmp/templates/android_release.apk ~/.local/share/godot/export_templates/4.4.stable/android_release.apk
-          echo "Export templates installed"
+          mkdir -p ~/.config/godot
+          echo '[gd_resource type="EditorSettings" format=3]' > ~/.config/godot/editor_settings-4.4.tres
+          echo '' >> ~/.config/godot/editor_settings-4.4.tres
+          echo '[resource]' >> ~/.config/godot/editor_settings-4.4.tres
+          echo 'export/android/android_sdk_path = "'$ANDROID_HOME'"' >> ~/.config/godot/editor_settings-4.4.tres
+          echo 'export/android/java_sdk_path = "'$JAVA_HOME'"' >> ~/.config/godot/editor_settings-4.4.tres
+          echo 'export/android/debug_keystore = "'$HOME'/.local/share/godot/keystores/debug.keystore"' >> ~/.config/godot/editor_settings-4.4.tres
+          echo 'export/android/debug_keystore_pass = "android"' >> ~/.config/godot/editor_settings-4.4.tres
+          echo 'export/android/debug_keystore_user = "androiddebugkey"' >> ~/.config/godot/editor_settings-4.4.tres
+          cat ~/.config/godot/editor_settings-4.4.tres
 
       - name: Generate debug keystore
         run: |
           mkdir -p ~/.local/share/godot/keystores
-          keytool -genkey -v -keystore ~/.local/share/godot/keystores/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          echo "Debug keystore generated"
-          ls -la ~/.local/share/godot/keystores/debug.keystore
+          keytool -genkeypair -alias androiddebugkey -keypass android -keystore ~/.local/share/godot/keystores/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
 
-      - name: Generate Godot editor settings (with Xvfb)
+      - name: Install Android build template
         run: |
-          mkdir -p ~/.config/godot
-          Xvfb :99 -screen 0 1024x768x24 &
-          sleep 2
-          DISPLAY=:99 timeout 30 ./godot --editor --quit 2>/dev/null || true
-          kill %1 2>/dev/null || true
-          SETTINGS=~/.config/godot/editor_settings-4.4.tres
-          if [ -f "$SETTINGS" ]; then
-            sed -i "s|export/android/android_sdk_path = \".*\"|export/android/android_sdk_path = \"$ANDROID_HOME\"|" $SETTINGS
-            sed -i "s|export/android/java_sdk_path = \".*\"|export/android/java_sdk_path = \"$JAVA_HOME\"|" $SETTINGS
-            echo "Updated editor settings:"
-            grep "android_sdk_path\|java_sdk_path" $SETTINGS
-          else
-            echo "ERROR: editor settings not generated"
-            exit 1
-          fi
+          mkdir -p android/plugins
+          echo "4.4.0.stable" > android/.build_version
+          mkdir -p android/build
+          unzip -o ~/.local/share/godot/export_templates/4.4.0.stable/android_source.zip -d android/build/
+          ls android/
+          echo "---"
+          ls android/build/ | head -10
 
-      - name: Export APK
+      - name: Import project assets
         run: |
-          ./godot --headless --export-release "Android" FPSProject.apk 2>&1
+          godot --headless --path . --import 2>&1 || true
+
+      - name: Export Android APK
+        run: |
+          godot --headless --path . --export-release "Android" FPSProject.apk 2>&1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

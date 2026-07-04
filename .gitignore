@@ -1,0 +1,20 @@
+# Godot 4.4 Android build template (large files, downloaded in CI)
+android/build/
+android/.build_version
+android/.gdignore
+android/plugins/
+
+# Godot cache files
+.godot/
+
+# Export templates (large)
+*.aar
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db
+android/build/
+android/libs/
+*.aar
